@@ -681,7 +681,7 @@
 
           // hide/show link to import page
           if (storage_for === 'source') {
-            $('#menu-import').css("display", storage_type === 'tasks-json' ? 'block' : 'none');
+            $('#menu-import').css("display", storage_type === 'tasks-json' || storage_type === "shelve" ? 'block' : 'none');
           }
         },
 

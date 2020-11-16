@@ -105,7 +105,7 @@ class Project(object):
 
     @classmethod
     def get_available_source_storages(cls):
-        return ['tasks-json', 's3', 'gcs']
+        return ['tasks-json', 'shelve', 's3', 'gcs']
 
     @classmethod
     def get_available_target_storages(cls):

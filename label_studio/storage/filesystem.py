@@ -1,6 +1,8 @@
+import atexit
 import json
 import os
 import logging
+import shelve
 from copy import deepcopy
 
 from label_studio.utils.io import json_load, delete_dir_content, iter_files
@@ -132,6 +134,58 @@ class DirJSONsStorage(BaseStorage):
 
     def empty(self):
         return next(self.ids(), None) is None
+
+
+class ShelveStorage(BaseStorage):
+
+    form = BaseForm
+    description = "Local [loading tasks from python shelve storage]"
+
+    def __init__(self, path, project_path, **kwargs):
+        super(ShelveStorage, self).__init__(project_path=project_path, path=os.path.join(project_path, 'tasks.shelve'), **kwargs)
+        self.data = shelve.open(self.path)
+        atexit.register(self.close)
+
+    def close(self):
+        self.data.close()
+
+    @property
+    def readable_path(self):
+        return self.path
+
+    def get(self, id):
+        return self.data.get(str(id))
+
+    def set(self, id, value):
+        self.data[str(id)] = value
+
+    def __contains__(self, id):
+        return str(id) in self.data
+
+    def set_many(self, ids, values):
+        for id, value in zip(ids, values):
+            self.data[str(id)] = value
+
+    def ids(self):
+        return  [int(id) for id in self.data.keys()]
+
+    def max_id(self):
+        return max(self.ids(), default=-1)
+
+    def items(self):
+        return self.data.items()
+
+    def remove(self, key):
+        self.data.pop(str(key), None)
+
+    def remove_all(self):
+        self.data.clear()
+
+    def empty(self):
+        return len(self.data) == 0
+
+    def sync(self):
+        pass
 
 
 class TasksJSONStorage(JSONStorage):
